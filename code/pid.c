@@ -12,13 +12,16 @@ float angle_add = 0.0; //附加的角度抑制量
 //速度120参数：拐弯kp0.8 kd0.409   直线kp0.7  kd 1.109
 pid_param_t Position_Pid_Corner = PID_CREATE(0.8, 0, 0, 10);  //常规转弯pid
 pid_param_t Position_Pid_Stright = PID_CREATE(0.45, 0, 0, 10); //常规直线pid
-pid_param_t Position_Pid_kp2 = PID_CREATE(0, 0, 0, 10);             //二次kp pid
+pid_param_t Position_Pid_kp2 = PID_CREATE(0, 0, 0, 10);        //二次kp pid
 
 //速度环pid参数定义
 pid_param_t Increment_Pid_LF = PID_CREATE(0.23, 0.11, 0.04, 10);
 pid_param_t Increment_Pid_RF = PID_CREATE(0.23, 0.11, 0.04, 10);
 pid_param_t Increment_Pid_LB = PID_CREATE(0.23, 0.11, 0.04, 10);
 pid_param_t Increment_Pid_RB = PID_CREATE(0.23, 0.11, 0.04, 10);
+
+//角度环pid参数定义
+pid_param_t Angle_Pid_Temp = PID_CREATE(0.8, 0, 0, 10);
 
 // 位置式pid-二次kp
 float kp_A = 0.5;
@@ -89,5 +92,20 @@ float Increment_Pid_solve(float tar_speed, float now_speed, pid_param_t *pid)
 
     pid->output += pid->kp * pid->out_p + pid->ki * pid->out_i + pid->kd * pid->out_d;
 
+    return pid->output;
+}
+
+//角度环pid
+float Angle_Pid_solve(pid_param_t *pid, float error)
+{
+    pid->error = error;
+
+    pid->out_d = pid->error - pid->l_error;
+    pid->out_p = pid->error;
+    pid->out_i += pid->error;
+
+    pid->l_error = pid->error;
+
+    pid->output = func_limit(pid->kp * pid->out_p + pid->ki * pid->out_i + pid->kd * pid->out_d, 200); //临时限幅
     return pid->output;
 }

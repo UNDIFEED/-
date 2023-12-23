@@ -1,6 +1,7 @@
 #include "zf_common_headfile.h"
 #include "image.h"
 #include "math.h"
+#include "imu963.h"
 
 uint8 MotorBegin_Flag = 0; //启动标志位
 uint8 shizi_status = 0; //十字状态
@@ -24,6 +25,7 @@ void Mode_Switch(void)
     }
     if (shizi_status == 1) //检测到开始进十字
     {
+        AngleGet_Flag = 1; //角度开始积分
         if (cornerpoint[0][2] == 0 && cornerpoint[1][2] == 0 && cornerpoint[2][2] == 0 && cornerpoint[3][2] == 0)
         {
             for (i = CUT_H; i <= image_h - 3; i++)
@@ -41,7 +43,7 @@ void Mode_Switch(void)
     }
     if (shizi_status == 2) //在十字内
     {
-        if (cornerpoint[0][2] == 1 && cornerpoint[1][2] == 1 && cornerpoint[2][2] == 1 && cornerpoint[3][2] == 1)
+        if (fabs(angle) >= 270)
         {
             shizi_status = 3; 
         }
@@ -59,6 +61,7 @@ void Mode_Switch(void)
             {
                 shizi_status = 0; //出十字le
                 ShiZi_Flag = 0;
+                AngleGet_Flag = 0;
                 shizi_count1 = 0;
                 shizi_count2 = 0;
             }
@@ -115,6 +118,7 @@ void Mode_Switch(void)
     }
     if (YuanHuan_Flag == 1) //左圆环
     {
+        AngleGet_Flag = 1; //角度开始积分
         if (yuanhuan_status == 1) //开始进圆环直道
         {   
             //左上角点到位开始进圆环
@@ -137,8 +141,8 @@ void Mode_Switch(void)
         }
         if (yuanhuan_status == 4) //开始出环岛
         {
-            //判到左上角点
-            if (cornerpoint[2][2] == 1 && cornerpoint[3][2] == 0) yuanhuan_status = 5;
+            //角度差不多转了一圈
+            if (fabs(angle) >= 340) yuanhuan_status = 5;
         }
         if (yuanhuan_status == 5) //正在补直线出环岛
         {
@@ -150,12 +154,14 @@ void Mode_Switch(void)
             if (yuanhuan_count2 >= 80)
             {
                 YuanHuan_Flag = 0;
+                AngleGet_Flag = 0;
                 yuanhuan_status = 0;
             }
         }
     }
     if (YuanHuan_Flag == 2) //右圆环
     {
+        AngleGet_Flag = 1; //角度开始积分
         if (yuanhuan_status == 1) //开始进圆环直道
         {   
             //右上角点到位开始进圆环
@@ -180,8 +186,8 @@ void Mode_Switch(void)
         }
         if (yuanhuan_status == 4) //开始出环岛
         {
-            //判到左下角点
-            if (cornerpoint[1][2] == 0 && cornerpoint[0][2] == 1) yuanhuan_status = 5;
+            //角度差不多转了一圈
+            if (fabs(angle) >= 340) yuanhuan_status = 5;
         }
         if (yuanhuan_status == 5) //正在补直线出环岛
         {
@@ -193,6 +199,7 @@ void Mode_Switch(void)
             if (yuanhuan_count2 >= 80)
             {
                 YuanHuan_Flag = 0;
+                AngleGet_Flag = 0;
                 yuanhuan_status = 0;
             }
         }

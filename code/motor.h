@@ -46,6 +46,7 @@ void Motor_Give(void);
 void Motor_Stop(void);
 void Motor_Speed_Calculation(void);
 void Motor_Position_Calculation(void);
+void Angle_Calculation(void);
 void Motor_Control(void);
 
 #endif

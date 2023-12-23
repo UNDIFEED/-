@@ -811,7 +811,7 @@ void image_process(void)
 		get_right(data_stastics_r);
 		//处理函数放这里，不要放到if外面去了
 		Find_CornerPoint(l_border, r_border);
-		// Corner_Addline(l_border, r_border); //十字补线
+		Corner_Addline(l_border, r_border); //十字补线
 		// cross_fill(bin_image,l_border, r_border, data_stastics_l, data_stastics_r, dir_l, dir_r, points_l, points_r);
 		Circle_Addline(YuanHuan_Flag, yuanhuan_status); //圆环补线
 		Cal_P_Error(l_border, r_border, USED_LINE_BEGIN, USED_LINE_END, 93.5); //计算循迹误差
@@ -867,7 +867,7 @@ void image_process(void)
 			tft180_draw_point((uint8)(((float)cornerpoint[i][0] / image_w) * TFTSHOW_W), (uint8)(((float)cornerpoint[i][1] / image_h) * TFTSHOW_H)+1, uesr_RED);
 		}
 	}
-	printf("%d, %d\n", data_stastics_l, data_stastics_r);
+	// printf("%d, %d\n", data_stastics_l, data_stastics_r);
 	
 
 }
@@ -1058,9 +1058,9 @@ void cross_fill(uint8(*image)[image_w], uint8 *l_border, uint8 *r_border, uint16
 		if (dir_l[i - 1] == 4 && dir_l[i] == 4 && dir_l[i + 3] == 6 && dir_l[i + 5] == 6 && dir_l[i + 7] == 6)
 		{
 			break_num_l = points_l[i][1];//传递y坐标
-			printf("brea_knum-L:%d\n", break_num_l);
-			printf("I:%d\n", i);
-			printf("十字标志位：1\n");
+			// printf("brea_knum-L:%d\n", break_num_l);
+			// printf("I:%d\n", i);
+			// printf("十字标志位：1\n");
 			break;
 		}
 	}
@@ -1069,9 +1069,9 @@ void cross_fill(uint8(*image)[image_w], uint8 *l_border, uint8 *r_border, uint16
 		if (dir_r[i - 1] == 4 && dir_r[i] == 4 && dir_r[i + 3] == 6 && dir_r[i + 5] == 6 && dir_r[i + 7] == 6)
 		{
 			break_num_r = points_r[i][1];//传递y坐标
-			printf("brea_knum-R:%d\n", break_num_r);
-			printf("I:%d\n", i);
-			printf("十字标志位：1\n");
+			// printf("brea_knum-R:%d\n", break_num_r);
+			// printf("I:%d\n", i);
+			// printf("十字标志位：1\n");
 			break;
 		}
 	}
@@ -1144,8 +1144,8 @@ void Circle_Addline(uint8 _flag, uint8 _status)
 			my_tft180_draw_line(48, 50, 130, 90, uesr_RED);
 			break;
 		case 5: //已经出弯道，补直线直走
-			ImageAddingLine(l_border, 75, 50, 49, 90);
-			my_tft180_draw_line(75, 50, 49, 90, uesr_RED);
+			ImageAddingLine(l_border, 63, 50, 53, 90);
+			my_tft180_draw_line(63, 50, 53, 90, uesr_RED);
 			break;
 		default:
 			break;

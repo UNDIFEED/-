@@ -4,6 +4,7 @@
 #include "control.h"
 #include "ladrc.h"
 #include "fliter.h"
+#include "imu963.h"
 
 //set_speed 0 - 10000
 //cm/s
@@ -55,6 +56,15 @@ void Motor_Position_Calculation(void)
 		motor_zuohou.tar_speed = motor_zuohou.set_speed - Position_Pid_solve(&Position_Pid_Stright, p_error) * 0.5;
 		motor_youhou.tar_speed = motor_youhou.set_speed + Position_Pid_solve(&Position_Pid_Stright, p_error) * 0.5;
 	}
+}
+
+//电机角度环解算
+void Angle_Calculation(void)
+{
+	motor_zuoqian.tar_speed = -Angle_Pid_solve(&Angle_Pid_Temp, 0 - angle);
+	motor_youqian.tar_speed = Angle_Pid_solve(&Angle_Pid_Temp, 0 - angle);
+	motor_zuohou.tar_speed = -Angle_Pid_solve(&Angle_Pid_Temp, 0 - angle);
+	motor_youhou.tar_speed = Angle_Pid_solve(&Angle_Pid_Temp, 0 - angle);
 }
 
 //电机速度解算

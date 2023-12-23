@@ -51,6 +51,7 @@ extern pid_param_t Increment_Pid_LF;
 extern pid_param_t Increment_Pid_RF;
 extern pid_param_t Increment_Pid_LB;
 extern pid_param_t Increment_Pid_RB;
+extern pid_param_t Angle_Pid_Temp;
 
 //二次kp系数
 extern float kp_A;
@@ -61,5 +62,6 @@ extern float kd_C;
 float Position_Pid_solve(pid_param_t *pid, float error);
 float Position_Pid_solve_kp2(pid_param_t *pid, float error);
 float Increment_Pid_solve(float tar_speed, float now_speed, pid_param_t *pid);
+float Angle_Pid_solve(pid_param_t *pid, float error);
 
 #endif
