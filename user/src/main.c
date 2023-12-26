@@ -98,7 +98,6 @@ int main(void)
             // tft180_displayimage03x(mt9v03x_image[0],157,100);
             image_process();
         }
-        Mode_Switch();
     }
 }
 

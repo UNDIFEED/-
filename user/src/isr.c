@@ -59,10 +59,14 @@ void PIT_IRQHandler(void)
     
     if(pit_flag_get(PIT_CH1)) //6ms
     {
-        Motor_Position_Calculation(); //位置偏差解算
         imu_get_gyro(); // 陀螺仪获取
-        // imu963ra_get_gyro();
-        // Upcomputer_Send(imu963ra_gyro_z, zero_drift_max, zero_drift_min, angle);
+        if (AngleGet_Flag == 1) integeal_angle(6);
+        else if (AngleGet_Flag == 0) angle = 0;
+        Motor_Position_Calculation(); //位置偏差解算
+        // integeal_angle(6);
+        // Angle_Calculation();
+        // printf("%f \n", angle);
+        // Upcomputer_Send(imu963ra_gyro_z, imu_gyro_z, zero_drift_max, zero_drift_min);
         pit_flag_clear(PIT_CH1);
     }
     
