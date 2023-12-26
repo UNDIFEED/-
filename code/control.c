@@ -16,8 +16,9 @@ void Mode_Switch(void)
     //检测十字
     if (shizi_status == 0 && YuanHuan_Flag == 0) //未检测到十字
     {
-        if (cornerpoint[0][2] == 1 && cornerpoint[1][2] == 1 && cornerpoint[2][2] == 1 && cornerpoint[3][2] == 0 ||
-            cornerpoint[0][2] == 1 && cornerpoint[1][2] == 1 && cornerpoint[2][2] == 0 && cornerpoint[3][2] == 1)
+        if ((cornerpoint[0][2] == 1 && cornerpoint[1][2] == 1 && cornerpoint[2][2] == 1 && cornerpoint[3][2] == 0 ||
+            cornerpoint[0][2] == 1 && cornerpoint[1][2] == 1 && cornerpoint[2][2] == 0 && cornerpoint[3][2] == 1) &&
+            (cornerpoint[0][1] >= USED_LINE_END || cornerpoint[0][1] >= USED_LINE_END))
         {
             shizi_status = 1;
             ShiZi_Flag = 1;
@@ -75,40 +76,38 @@ void Mode_Switch(void)
     line_equation behind_l = LINE_CREATE(); //左边线后方线段
     line_equation front_r = LINE_CREATE(); //右边线前方线段
     line_equation behind_r = LINE_CREATE(); //右边线后方线段
-    line_equation front_mid = LINE_CREATE(); //中线后方线段
-    line_equation behind_mid = LINE_CREATE(); //中边线后方线段
     //检测圆环
     if (yuanhuan_status == 0 && ShiZi_Flag == 0) //未检测到圆环状态
     {
-        if (cornerpoint[0][2] == 1 && cornerpoint[1][2] == 0 && cornerpoint[0][1] >= USED_LINE_END - 10) //左圆环-拐点超过循迹最后一行
+        if (cornerpoint[0][2] == 1 && cornerpoint[1][2] == 0 && cornerpoint[0][1] >= USED_LINE_END - 5) //左圆环-拐点超过循迹最后一行
         {
-            for (i = cornerpoint[0][1] + 3; i > cornerpoint[0][1] - 12; i--) //在拐点所在往前数3行起前15行不丢线
+            for (i = cornerpoint[0][1] + 3; i > cornerpoint[0][1] - 12; i--) //在拐点所在往前数3行起前15行不丢边
             {
                 if (r_border[i] < 186) yuanhuan_count++;//没丢边
             }
-            for (i = CUT_H; i <= image_h - 3; i++)
+            for (i = 15; i <= image_h - 3; i++)
             {
                 if(r_border[i] <= r_border[i+1]) yuanhuan_count2++;//右边线单调
             }
-            if (yuanhuan_count >= 13 && yuanhuan_count2 >= 82 &&
-                (data_stastics_l + data_stastics_r) >= 300 && data_stastics_l - data_stastics_r >= 120) //最后一个条件防止弯道误判
+            if (yuanhuan_count >= 13 && yuanhuan_count2 >= 72 &&
+                (data_stastics_l + data_stastics_r) >= 300 && data_stastics_l - data_stastics_r >= 100) //最后一个条件防止弯道误判
             {
                 YuanHuan_Flag = 1; //左圆环
                 yuanhuan_status = 1;
             }
         }
-        else if (cornerpoint[0][2] == 0 && cornerpoint[1][2] == 1 && cornerpoint[1][1] >= USED_LINE_END - 10) //右圆环
+        else if (cornerpoint[0][2] == 0 && cornerpoint[1][2] == 1 && cornerpoint[1][1] >= USED_LINE_END - 5) //右圆环
         {
             for (i = cornerpoint[1][1] + 3; i > cornerpoint[1][1] - 12; i--) //在拐点所在往前数3行起前15行不丢线
             {
                 if (l_border[i] > 2) yuanhuan_count++;//没丢边
             }
-            for (i = CUT_H; i <= image_h - 3; i++)
+            for (i = 15; i <= image_h - 3; i++)
             {
                 if(l_border[i] >= l_border[i+1]) yuanhuan_count2++;//左边线单调
             }
-            if (yuanhuan_count >= 13 && yuanhuan_count2 >= 82 &&
-                (data_stastics_l + data_stastics_r) >= 300 && data_stastics_r - data_stastics_l >= 120)
+            if (yuanhuan_count >= 13 && yuanhuan_count2 >= 72 &&
+                (data_stastics_l + data_stastics_r) >= 300 && data_stastics_r - data_stastics_l >= 100)
             {
                 YuanHuan_Flag = 2; //右圆环
                 yuanhuan_status = 1;
@@ -122,7 +121,7 @@ void Mode_Switch(void)
         if (yuanhuan_status == 1) //开始进圆环直道
         {   
             //左上角点到位开始进圆环
-            if (cornerpoint[2][2] == 1 && cornerpoint[3][2] == 0 && cornerpoint[2][1] >= USED_LINE_END - 10) yuanhuan_status = 2; 
+            if (cornerpoint[2][2] == 1 && cornerpoint[3][2] == 0 && cornerpoint[2][1] >= 25) yuanhuan_status = 2; 
         }
         if (yuanhuan_status == 2) //正在进入圆环弯道内
         {   
@@ -133,10 +132,8 @@ void Mode_Switch(void)
         {   
             //检测到右下角点
             if (cornerpoint[1][2] == 1)
-            {   //计算右下角点上面和下面斜率，判断尖尖
-                k_and_b(&front_mid, (l_border[cornerpoint[1][1] - 3] + r_border[cornerpoint[1][1] - 3]) / 2, cornerpoint[1][1] - 3, (l_border[cornerpoint[1][1]] + r_border[cornerpoint[1][1]]) / 2, cornerpoint[1][1]);
-                k_and_b(&behind_mid, (l_border[cornerpoint[1][1]] + r_border[cornerpoint[1][1]]) / 2, cornerpoint[1][1], (l_border[cornerpoint[1][1] + 3] + r_border[cornerpoint[1][1] + 3]) / 2, cornerpoint[1][1] + 3);
-                if (front_mid.k * behind_mid.k < 0) yuanhuan_status = 4;
+            {   
+                if (angle >= 270) yuanhuan_status = 4;
             }
         }
         if (yuanhuan_status == 4) //开始出环岛
@@ -146,12 +143,12 @@ void Mode_Switch(void)
         }
         if (yuanhuan_status == 5) //正在补直线出环岛
         {
-            //左边线单调
+            //左边几乎没有丢线行
             for (i = CUT_H; i<= image_h - 3; i++)
             {
-                if (l_border[i] >= l_border[i+1]) yuanhuan_count2++;
+                if (l_border[i] == 2) yuanhuan_count2++; //丢线
             }
-            if (yuanhuan_count2 >= 80)
+            if (yuanhuan_count2 <= 15)
             {
                 YuanHuan_Flag = 0;
                 AngleGet_Flag = 0;
@@ -165,7 +162,7 @@ void Mode_Switch(void)
         if (yuanhuan_status == 1) //开始进圆环直道
         {   
             //右上角点到位开始进圆环
-            if (cornerpoint[2][2] == 0 && cornerpoint[3][2] == 1 && cornerpoint[3][1] >= USED_LINE_END - 10) yuanhuan_status = 2; 
+            if (cornerpoint[2][2] == 0 && cornerpoint[3][2] == 1 && cornerpoint[3][1] >= 25) yuanhuan_status = 2; 
         }
         if (yuanhuan_status == 2) //正在进入圆环弯道内
         {
@@ -176,12 +173,8 @@ void Mode_Switch(void)
         {   
             //检测到左下角点
             if (cornerpoint[0][2] == 1)
-            {   //计算右下角点上面和下面斜率，判断尖尖
-                k_and_b(&front_mid, (l_border[cornerpoint[1][1] - 3] + r_border[cornerpoint[1][1] - 3]) / 2, cornerpoint[1][1] - 3, (l_border[cornerpoint[1][1]] + r_border[cornerpoint[1][1]]) / 2, cornerpoint[1][1]);
-                k_and_b(&behind_mid, (l_border[cornerpoint[1][1]] + r_border[cornerpoint[1][1]]) / 2, cornerpoint[1][1], (l_border[cornerpoint[1][1] + 3] + r_border[cornerpoint[1][1] + 3]) / 2, cornerpoint[1][1] + 3);
-                if (front_mid.k * behind_mid.k < 0) yuanhuan_status = 4;
-                // tft180_show_int(110, 80, front_mid.k, 3); //90 49
-                // tft180_show_int(110, 90, behind_mid.k, 3); //50 75
+            {   
+                if (angle <= -270) yuanhuan_status = 4;
             }
         }
         if (yuanhuan_status == 4) //开始出环岛
@@ -191,12 +184,12 @@ void Mode_Switch(void)
         }
         if (yuanhuan_status == 5) //正在补直线出环岛
         {
-            //右边线单调
+            //右边几乎没有丢线行
             for (i = CUT_H; i<= image_h - 3; i++)
             {
-                if (r_border[i] >= r_border[i+1]) yuanhuan_count2++;
+                if (r_border[i] == 185) yuanhuan_count2++;
             }
-            if (yuanhuan_count2 >= 80)
+            if (yuanhuan_count2 <= 15)
             {
                 YuanHuan_Flag = 0;
                 AngleGet_Flag = 0;
@@ -204,16 +197,11 @@ void Mode_Switch(void)
             }
         }
     }
-    line_equation l_line = LINE_CREATE(); 
-    line_equation r_line = LINE_CREATE(); 
-    calculate_s_i(hightest, image_h - 3, l_border, &l_line);
-    calculate_s_i(hightest, image_h - 3, r_border, &r_line);
-    // tft180_show_int(110, 80, l_border[USED_LINE_BEGIN], 3); //90 49
-    // tft180_show_int(110, 90, r_border[USED_LINE_BEGIN], 3); //50 75
 
     //异常停车
-    if (data_stastics_l <= 5 || (bin_image[118][94] == 0 && bin_image[117][94] == 0 && bin_image[116][94] == 0))
+    if (data_stastics_l <= 5 || (bin_image[image_h - 5][image_w / 2] == 0 && bin_image[image_h - 6][image_w / 2] == 0 && bin_image[image_h - 7][image_w / 2] == 0))
     {
         MotorBegin_Flag = 0;
     }
+    // printf("l = %d\tr = %d\n", data_stastics_l,data_stastics_r);
 }

@@ -101,6 +101,13 @@ void Motor_Speed_Calculation(void)
 	// motor_youqian.duty = MOTOR_RF.u;
 	// motor_zuohou.duty = MOTOR_LB.u;
 	// motor_youhou.duty = MOTOR_RB.u;
+
+/****************************************************************************************************************************************************/
+	//不调速测试
+	// motor_zuoqian.duty = motor_zuoqian.tar_speed;
+	// motor_youqian.duty = motor_youqian.tar_speed;
+	// motor_zuohou.duty = motor_zuohou.tar_speed;
+	// motor_youhou.duty = motor_youhou.tar_speed;
 }
 
 // 电机设定速度函数

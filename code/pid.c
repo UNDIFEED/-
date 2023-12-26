@@ -3,6 +3,7 @@
 #include "motor.h"
 #include "fliter.h"
 #include "imu963.h"
+#include "math.h"
 
 //左转p_error>0，右转p_error<0
 float p_error = 0.0; //寻仙误差
@@ -10,7 +11,7 @@ float angle_add = 0.0; //附加的角度抑制量
 
 //位置环pid参数定义
 //速度120参数：拐弯kp0.8 kd0.409   直线kp0.7  kd 1.109
-pid_param_t Position_Pid_Corner = PID_CREATE(0.8, 0, 0, 10);  //常规转弯pid
+pid_param_t Position_Pid_Corner = PID_CREATE(1.1, 0, 0, 10);  //常规转弯pid
 pid_param_t Position_Pid_Stright = PID_CREATE(0.45, 0, 0, 10); //常规直线pid
 pid_param_t Position_Pid_kp2 = PID_CREATE(0, 0, 0, 10);        //二次kp pid
 
@@ -21,7 +22,7 @@ pid_param_t Increment_Pid_LB = PID_CREATE(0.23, 0.11, 0.04, 10);
 pid_param_t Increment_Pid_RB = PID_CREATE(0.23, 0.11, 0.04, 10);
 
 //角度环pid参数定义
-pid_param_t Angle_Pid_Temp = PID_CREATE(0.8, 0, 0, 10);
+pid_param_t Angle_Pid_Temp = PID_CREATE(100, 0, 0, 10);
 
 // 位置式pid-二次kp
 float kp_A = 0.5;
@@ -106,6 +107,7 @@ float Angle_Pid_solve(pid_param_t *pid, float error)
 
     pid->l_error = pid->error;
 
-    pid->output = func_limit(pid->kp * pid->out_p + pid->ki * pid->out_i + pid->kd * pid->out_d, 200); //临时限幅
+    pid->output = func_limit(pid->kp * pid->out_p + pid->ki * pid->out_i + pid->kd * pid->out_d, 1500); //临时限幅
+    // printf("%f \n", pid->output);
     return pid->output;
 }

@@ -5,7 +5,7 @@
 
 //声明函数
 void Cal_P_Error(uint8 *_l_border, uint8 *_r_border, uint16 begin_line, uint16 end_line, float center);
-void Find_CornerPoint(uint8 *_l_border, uint8 *_r_border);
+void Find_CornerPoint(uint8 *_l_border, uint8 *_r_border, uint8 begin_line, uint8 end_line);
 void Corner_Addline(uint8 *_l_border, uint8 *_r_border);
 void cross_fill(uint8(*image)[image_w], uint8 *l_border, uint8 *r_border, uint16 total_num_l, uint16 total_num_r, uint16 *dir_l, uint16 *dir_r, uint16(*points_l)[2], uint16(*points_r)[2]);
 void Circle_Addline(uint8 _flag, uint8 _status);
@@ -35,7 +35,7 @@ void Turn_Bin(uint8 threshold)
 	}
 }
 	
-//填充最上边图像不使用
+//填充最上边图像不使用(剪切图像后已弃用)
 void Fill_UpPic(uint8 (*bin_image)[image_w])
 {
 	unsigned short i = 0, j = 0;
@@ -108,8 +108,11 @@ example：  k_and_b(line, 1, 1, 9, 9)
  */
 void k_and_b(line_equation *temp_line, int16 startX, int16 startY, int16 endX, int16 endY)
 {
-	temp_line->k = (float)((float)endY - (float)startY) / (float)((float)endX - (float)startX);
-	temp_line->b = (float)startY - (float)startX * temp_line->k;
+	if ((float)((float)endX - (float)startX) != 0)
+	{
+		temp_line->k = (float)((float)endY - (float)startY) / (float)((float)endX - (float)startX);
+		temp_line->b = (float)startY - (float)startX * temp_line->k;
+	}
 }
 
 /** 
@@ -652,6 +655,8 @@ example： get_left(data_stastics_l );
 uint8 l_border[image_h];//左线数组
 uint8 r_border[image_h];//右线数组
 uint8 center_line[image_h];//中线数组
+uint8 l_border_hightest; //左边线最高行
+uint8 r_border_hightest; //右边线最高行
 void get_left(uint16 total_L)
 {
 	uint8 i = 0;
@@ -677,6 +682,7 @@ void get_left(uint16 total_L)
 			break;//到最后一行退出
 		}
 	}
+	l_border_hightest = h;
 }
 /*
 函数名称：void get_right(uint16 total_R)
@@ -709,6 +715,7 @@ void get_right(uint16 total_R)
 		h--;
 		if (h == 0)break;//到最后一行退出
 	}
+	r_border_hightest = h;
 }
 
 //定义膨胀和腐蚀的阈值区间
@@ -793,7 +800,7 @@ void image_process(void)
 	/*这是离线调试用的*/
 	Get_image(mt9v03x_image);
 	turn_to_bin();
-	Fill_UpPic(bin_image);
+	// Fill_UpPic(bin_image); //填充图像上方
 	/*提取赛道边界*/
 	image_filter(bin_image);//滤波
 	image_draw_rectan(bin_image);//预处理
@@ -810,7 +817,8 @@ void image_process(void)
 		get_left(data_stastics_l);
 		get_right(data_stastics_r);
 		//处理函数放这里，不要放到if外面去了
-		Find_CornerPoint(l_border, r_border);
+		Mode_Switch(); //模式切换
+		Find_CornerPoint(l_border, r_border, image_h - 5, 15);
 		Corner_Addline(l_border, r_border); //十字补线
 		// cross_fill(bin_image,l_border, r_border, data_stastics_l, data_stastics_r, dir_l, dir_r, points_l, points_r);
 		Circle_Addline(YuanHuan_Flag, yuanhuan_status); //圆环补线
@@ -819,7 +827,7 @@ void image_process(void)
 
 
 	//显示图像
-	// sendimg_binary(mt9v03x_image, image_w, image_h, 180); //图传调试
+	// sendimg(mt9v03x_image, image_w, image_h); //图传调试
 	tft180_displayimage03x(bin_image[0], TFTSHOW_W, TFTSHOW_H);// TFT屏幕调试
 	tft180_draw_line(0, (uint16)((float)USED_LINE_BEGIN/image_h*TFTSHOW_H), TFTSHOW_W, (uint16)((float)USED_LINE_BEGIN/image_h*TFTSHOW_H), uesr_BLUE);
 	tft180_draw_line(0, (uint16)((float)USED_LINE_END/image_h*TFTSHOW_H), TFTSHOW_W, (uint16)((float)USED_LINE_END/image_h*TFTSHOW_H), uesr_BLUE);
@@ -867,8 +875,15 @@ void image_process(void)
 			tft180_draw_point((uint8)(((float)cornerpoint[i][0] / image_w) * TFTSHOW_W), (uint8)(((float)cornerpoint[i][1] / image_h) * TFTSHOW_H)+1, uesr_RED);
 		}
 	}
-	// printf("%d, %d\n", data_stastics_l, data_stastics_r);
-	
+	// for (i = 0; i < sizeof(l_border)/sizeof(l_border[0]); i++)
+	// {
+	// 	printf("[%d] = %d\n", i, l_border[i]);
+	// }
+	// line_equation front_l = LINE_CREATE();
+	// line_equation front_r = LINE_CREATE();
+	// k_and_b(&front_l, l_border[l_border_hightest], l_border_hightest, l_border[USED_LINE_END], USED_LINE_END);
+    // k_and_b(&front_r, r_border[r_border_hightest], r_border_hightest, r_border[USED_LINE_END], USED_LINE_END);
+	// printf("lk = %f\trk = %f\n", front_l.k, front_r.k);
 
 }
 
@@ -887,9 +902,7 @@ center：中间点x坐标
 备    注：路线在中线左边p_error>0，路线在中线右边p_error<0
 example：Cal_P_Error(l_border, r_border, 95, 94);
  */
-uint16_t weight_array[41] = {1, 1, 1, 1, 1, 1, 2, 2, 2, 2,
-                        	 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-							 3, 3, 3, 3, 4, 4, 5, 5, 5, 5};
+uint16_t weight_array[21] = {5,5,5,5,4,4,4,4,3,3,3,3,2,2,2,2,1,1,1,1,1};
 void Cal_P_Error(uint8 *_l_border, uint8 *_r_border, uint16 begin_line, uint16 end_line, float center)
 {
 	uint16 i = 0;
@@ -912,6 +925,8 @@ void Cal_P_Error(uint8 *_l_border, uint8 *_r_border, uint16 begin_line, uint16 e
 参数说明：
 *_l_border：左边线点
 *_r_border：右边线点
+begin_line：找角点起始行
+end_line  ：找角点结束行
 函数返回：无
 修改时间：2022年9月25日
 备    注：无
@@ -919,13 +934,13 @@ example：Find_CornerPoint(l_border, r_border);
  */
 uint16 cornerpoint[4][3]; //两个角点 -- 左下，右下 {x,y,flag}
 
-void Find_CornerPoint(uint8 *_l_border, uint8 *_r_border)
+void Find_CornerPoint(uint8 *_l_border, uint8 *_r_border, uint8 begin_line, uint8 end_line)
 {
 	uint16 i, j;
 	uint8 diuxian_count = 0; //丢线数
 	memset(cornerpoint, 0, sizeof(cornerpoint)); //数组清零
 
-	for(i=CUT_H+4; i<=image_h-4; i++) //从循迹起始行到结束行搜索十字角点
+	for(i = end_line; i <= begin_line; i++) //从循迹起始行到结束行搜索十字角点
 	{   //此行前两行均相差不大，后一行相差巨大判断为角点
 		if (_l_border[0] != border_max && _l_border[1] != border_max && _l_border[2] != border_max) //判断左下角点
 		{
@@ -1130,22 +1145,22 @@ void Circle_Addline(uint8 _flag, uint8 _status)
 		switch (_status)
 		{
 		case 1: //圆环直线补线
-			ImageAddingLine(l_border, 63, 50, 53, 90);
-			my_tft180_draw_line(63, 50, 53, 90, uesr_RED);
+			ImageAddingLine(l_border, 63, USED_LINE_END, 53, image_h - 2);
+			my_tft180_draw_line(63, USED_LINE_END, 53, image_h - 2, uesr_RED);
 			break;
 		case 2: //进弯道，补线往左边打角
-			ImageAddingLine(r_border, 73, 48, 130, 90);
-			my_tft180_draw_line(73, 48, 130, 90, uesr_RED);
+			ImageAddingLine(r_border, 73, USED_LINE_END, 130, image_h - 2);
+			my_tft180_draw_line(73, USED_LINE_END, 130, image_h - 2, uesr_RED);
 			break;  
 		case 3: //在弯道，正常循迹不做处理
 			break;
 		case 4: //出弯道，补线往左边打角
-			ImageAddingLine(r_border, 48, 50, 130, 90);
-			my_tft180_draw_line(48, 50, 130, 90, uesr_RED);
+			ImageAddingLine(r_border, 55, USED_LINE_END, 130, image_h - 2);
+			my_tft180_draw_line(55, USED_LINE_END, 130, image_h - 2, uesr_RED);
 			break;
 		case 5: //已经出弯道，补直线直走
-			ImageAddingLine(l_border, 63, 50, 53, 90);
-			my_tft180_draw_line(63, 50, 53, 90, uesr_RED);
+			ImageAddingLine(l_border, 74, USED_LINE_END, 53, image_h - 2);
+			my_tft180_draw_line(74, USED_LINE_END, 53, image_h - 2, uesr_RED);
 			break;
 		default:
 			break;
@@ -1156,22 +1171,22 @@ void Circle_Addline(uint8 _flag, uint8 _status)
 		switch (_status)
 		{
 		case 1: //圆环直线补线
-			ImageAddingLine(r_border, 117, 50, 137, 90);
-			my_tft180_draw_line(117, 50, 137, 90, uesr_RED);
+			ImageAddingLine(r_border, 117, USED_LINE_END, 137, image_h - 2);
+			my_tft180_draw_line(117, USED_LINE_END, 137, image_h - 2, uesr_RED);
 			break;
 		case 2: //进弯道，补线往右边打角
-			ImageAddingLine(l_border, 115, 48, 58, 90);
-			my_tft180_draw_line(115, 48, 58, 90, uesr_RED);
+			ImageAddingLine(l_border, 115, USED_LINE_END, 58, image_h - 2);
+			my_tft180_draw_line(115, USED_LINE_END, 58, image_h - 2, uesr_RED);
 			break;
 		case 3: //在弯道，正常循迹不做处理
 			break;
 		case 4: //出弯道，补线往右边打角
-			ImageAddingLine(l_border, 140, 50, 58, 90);
-			my_tft180_draw_line(140, 50, 58, 90, uesr_RED);
+			ImageAddingLine(l_border, 140, USED_LINE_END, 58, image_h - 2);
+			my_tft180_draw_line(140, USED_LINE_END, 58, image_h - 2, uesr_RED);
 			break;
 		case 5: //已经出弯道，补直线直走
-			ImageAddingLine(r_border, 113, 50, 139, 90);
-			my_tft180_draw_line(113, 50, 139, 90, uesr_RED);
+			ImageAddingLine(r_border, 113, USED_LINE_END, 139, image_h - 2);
+			my_tft180_draw_line(113, USED_LINE_END, 139, image_h - 2, uesr_RED);
 			break;
 		default:
 			break;

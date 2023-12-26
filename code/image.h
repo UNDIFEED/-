@@ -8,7 +8,7 @@
 #define uesr_BLUE    0X001F    //蓝色
 
 //宏定义
-#define image_h	120//图像高度
+#define image_h	90//图像高度
 #define image_w	188//图像宽度
 
 #define white_pixel	255
@@ -18,10 +18,10 @@
 #define border_max	image_w-2 //边界最大值
 #define border_min	1	//边界最小值	
 
-#define CUT_H               (35) //图像顶上切除的高度
+#define CUT_H               (2) //图像顶上切除的高度
 #define TFTSHOW_W           (80) //TFT屏幕显示的宽高 157  100
 #define TFTSHOW_H           (50)
-#define USED_LINE_BEGIN     (90) //用来循迹的首行
+#define USED_LINE_BEGIN     (70) //用来循迹的首行
 #define USED_LINE_END       (50) //用来循迹的尾行
 
 //结构体定义
@@ -41,6 +41,8 @@ extern uint8 image_thereshold;//二值化阈值
 
 extern uint16 data_stastics_l, data_stastics_r;
 extern uint8 hightest;
+extern uint8 l_border_hightest;
+extern uint8 r_border_hightest;
 
 extern uint8 original_image[image_h][image_w];
 extern uint8 bin_image[image_h][image_w];//图像数组

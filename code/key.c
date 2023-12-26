@@ -29,13 +29,13 @@ void key1_control(void)
 		// Increment_Pid_RB.kp += 0.002;
 
 		//位置环调参
-		// Position_Pid_Corner.kd += 0.01;
+		Position_Pid_Corner.kd += 0.01;
 
 		//二次kp调参
 //		kd_C += 0.01;
 
 		//角度环调参
-		Angle_Pid_Temp.kd += 0.01;
+		// Angle_Pid_Temp.kd += 0.01;
 	}
 	
 	if(!gpio_get_level(DOWN_KEY))
@@ -51,13 +51,13 @@ void key1_control(void)
 		// Increment_Pid_RB.kp -= 0.002;
 
 		//位置环调参
-		// Position_Pid_Corner.kd -= 0.01;
+		Position_Pid_Corner.kd -= 0.01;
 
 		//二次kp调参
 //		kd_C -= 0.01;
 
 		//角度环调参
-		Angle_Pid_Temp.kd -= 0.01;
+		// Angle_Pid_Temp.kd -= 0.01;
 	}
 	
 	if(!gpio_get_level(LEFT_KEY))
@@ -73,13 +73,13 @@ void key1_control(void)
 		// Increment_Pid_RB.ki -= 0.005;
 
 		//位置环调参
-		// Position_Pid_Corner.kp -= 0.01;
+		Position_Pid_Corner.kp -= 0.01;
 
 		//二次kp调参
 		// kp_A -= 0.001;
 
 		//角度环调参
-		Angle_Pid_Temp.kp -= 0.01;
+		// Angle_Pid_Temp.kp -= 0.01;
 
 		//二值化阈值
 		// image_thereshold -= 1;
@@ -97,13 +97,13 @@ void key1_control(void)
 		// Increment_Pid_RB.ki += 0.005;
 
 		//位置环调参
-		// Position_Pid_Corner.kp += 0.01;
+		Position_Pid_Corner.kp += 0.01;
 
 		//二次kp调参
 		// kp_A += 0.001;
 
 		//角度环调参
-		Angle_Pid_Temp.kp += 0.01;
+		// Angle_Pid_Temp.kp += 0.01;
 
 		//二值化阈值
 		// image_thereshold += 1;

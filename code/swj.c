@@ -20,8 +20,8 @@
 #include "swj.h"
 
 //需要修改的地方
-#define  sw_write_byte(dat)  wireless_uart_send_byte(dat)//串口发送字节
-#define  sw_write_buffer(dat,len)  wireless_uart_send_buffer(dat,len)//无线串口发送数组或串口发送数组
+#define  sw_write_byte(dat)  uart_write_byte(UART_1, dat)//串口发送字节
+#define  sw_write_buffer(dat,len)  uart_write_buffer(UART_1, dat,len)//无线串口发送数组或串口发送数组
 
 /*
  * 修改说明:

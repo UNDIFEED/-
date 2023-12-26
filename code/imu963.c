@@ -30,8 +30,8 @@ float angle = 0.0; //车角度,向左增大，向右减小
 void imu_get_gyro(void)
 {
     imu963ra_get_gyro();
-    // imu_gyro_z = Average_Filter(imu963ra_gyro_z);
-    imu_gyro_z = imu963ra_gyro_z;
+    imu_gyro_z = Average_Filter(imu963ra_gyro_z);
+    // imu_gyro_z = imu963ra_gyro_z;
 
     //在零漂范围内直接强制给0
     //不在零漂范围正常给值，这里减去了零漂的平均值
